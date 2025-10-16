@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Click Accessibility Checker",
+  "version": "1.0",
+  "description": "Finds clickable elements that are not keyboard accessible.",
+  "permissions": ["activeTab", "scripting"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "devtools_page": "devtools-init.html"
+}
