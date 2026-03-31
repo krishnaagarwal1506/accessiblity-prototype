@@ -1,0 +1,49 @@
+/* ========================================
+   Accessibility Checker — Content Styles
+   Injected into inspected pages
+   ======================================== */
+
+/* Base highlight — subtle outline */
+.a11y-checker-highlight {
+  outline-offset: 2px !important;
+  position: relative !important;
+}
+
+/* Severity-based colours */
+.a11y-checker-highlight-critical {
+  outline: 3px solid #dc2626 !important;
+  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.25) !important;
+}
+
+.a11y-checker-highlight-serious {
+  outline: 3px solid #ea580c !important;
+  box-shadow: 0 0 0 1px rgba(234, 88, 12, 0.25) !important;
+}
+
+.a11y-checker-highlight-moderate {
+  outline: 2px dashed #ca8a04 !important;
+  box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.2) !important;
+}
+
+.a11y-checker-highlight-minor {
+  outline: 2px dashed #2563eb !important;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Focused / hovered from panel */
+.a11y-checker-focus {
+  outline: 3px solid #7c3aed !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.5) !important;
+  animation: a11y-checker-pulse 1.2s ease-in-out 3;
+}
+
+@keyframes a11y-checker-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.5) !important;
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.8) !important;
+  }
+}
