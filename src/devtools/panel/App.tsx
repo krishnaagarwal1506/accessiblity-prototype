@@ -6,6 +6,7 @@ import { IssueList } from "./components/IssueList";
 import { EmptyState } from "./components/EmptyState";
 import { Header } from "./components/Header";
 import { ScoreGauge } from "./components/ScoreGauge";
+import { matchesWcagLevel, type WcagLevel } from "./wcag-levels";
 
 export default function App() {
   const [issues, setIssues] = useState<AccessibilityIssue[]>([]);
@@ -14,6 +15,7 @@ export default function App() {
   const [categoryFilter, setCategoryFilter] = useState<Category | "all">("all");
   const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [wcagLevel, setWcagLevel] = useState<WcagLevel | "all">("all");
   const [pageUrl, setPageUrl] = useState("");
   const [lastScan, setLastScan] = useState<number | null>(null);
   const [focusIssueId, setFocusIssueId] = useState<string | null>(null);
@@ -84,6 +86,7 @@ export default function App() {
         return false;
       if (severityFilter !== "all" && issue.severity !== severityFilter)
         return false;
+      if (!matchesWcagLevel(issue.wcag, wcagLevel)) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
@@ -95,7 +98,7 @@ export default function App() {
       }
       return true;
     });
-  }, [issues, categoryFilter, severityFilter, searchQuery]);
+  }, [issues, categoryFilter, severityFilter, wcagLevel, searchQuery]);
 
   const exportCSV = useCallback(() => {
     if (issues.length === 0) return;
@@ -169,9 +172,11 @@ export default function App() {
               <FilterBar
                 categoryFilter={categoryFilter}
                 severityFilter={severityFilter}
+                wcagLevel={wcagLevel}
                 searchQuery={searchQuery}
                 onCategoryChange={setCategoryFilter}
                 onSeverityChange={setSeverityFilter}
+                onWcagLevelChange={setWcagLevel}
                 onSearchChange={setSearchQuery}
               />
             </>
