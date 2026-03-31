@@ -1,5 +1,5 @@
 import { runAllChecks } from "./checks";
-import type { AccessibilityIssue, Message } from "@/types";
+import type { Message } from "@/types";
 
 let checkTimeout: ReturnType<typeof setTimeout> | null = null;
 let isChecking = false;
@@ -21,7 +21,7 @@ function runCheck() {
         executeCheck();
         isChecking = false;
       },
-      { timeout: 3000 }
+      { timeout: 3000 },
     );
   } else {
     setTimeout(() => {
@@ -98,7 +98,15 @@ function startObserver() {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["onclick", "role", "tabindex", "style", "alt", "aria-label", "aria-hidden"],
+    attributeFilter: [
+      "onclick",
+      "role",
+      "tabindex",
+      "style",
+      "alt",
+      "aria-label",
+      "aria-hidden",
+    ],
   });
 }
 
@@ -139,7 +147,7 @@ chrome.runtime.onMessage.addListener(
       sendResponse({ status: "cleared" });
     }
     return true;
-  }
+  },
 );
 
 // Initial check

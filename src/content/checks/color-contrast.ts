@@ -26,7 +26,7 @@ function contrastRatio(l1: number, l2: number): number {
 
 function parseColor(color: string): [number, number, number, number] | null {
   const rgb = color.match(
-    /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/
+    /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/,
   );
   if (rgb) {
     return [
@@ -43,7 +43,7 @@ function blendOnWhite(
   r: number,
   g: number,
   b: number,
-  a: number
+  a: number,
 ): [number, number, number] {
   return [
     Math.round(r * a + 255 * (1 - a)),
@@ -77,7 +77,7 @@ function hasOwnText(el: Element): boolean {
 export function checkColorContrast(): AccessibilityIssue[] {
   const issues: AccessibilityIssue[] = [];
   const textElements = document.querySelectorAll(
-    "p, span, a, h1, h2, h3, h4, h5, h6, li, td, th, label, button, div, section, article, strong, em, b, i, small, blockquote, figcaption, dt, dd, cite, code, pre"
+    "p, span, a, h1, h2, h3, h4, h5, h6, li, td, th, label, button, div, section, article, strong, em, b, i, small, blockquote, figcaption, dt, dd, cite, code, pre",
   );
 
   for (const el of textElements) {
@@ -92,7 +92,12 @@ export function checkColorContrast(): AccessibilityIssue[] {
 
     const [fr, fg, fb, fa] = fgParsed;
     const fgBlended = blendOnWhite(fr, fg, fb, fa);
-    const bgBlended = blendOnWhite(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
+    const bgBlended = blendOnWhite(
+      bgColor[0],
+      bgColor[1],
+      bgColor[2],
+      bgColor[3],
+    );
 
     const fgLum = luminance(...fgBlended);
     const bgLum = luminance(...bgBlended);
@@ -120,7 +125,7 @@ export function checkColorContrast(): AccessibilityIssue[] {
 }
 
 function getEffectiveBackground(
-  el: Element
+  el: Element,
 ): [number, number, number, number] | null {
   let current: Element | null = el;
   while (current) {

@@ -43,8 +43,7 @@ export function checkDocument(): AccessibilityIssue[] {
 
   // Check for main landmark
   const hasMain =
-    document.querySelector("main") ||
-    document.querySelector('[role="main"]');
+    document.querySelector("main") || document.querySelector('[role="main"]');
   if (!hasMain) {
     issues.push({
       id: uid(),
@@ -54,7 +53,7 @@ export function checkDocument(): AccessibilityIssue[] {
       element: "<body>",
       selector: "body",
       wcag: "1.3.1",
-      help: "Use a <main> element (or role=\"main\") to identify the primary content area.",
+      help: 'Use a <main> element (or role="main") to identify the primary content area.',
     });
   }
 
@@ -81,10 +80,7 @@ export function checkDocument(): AccessibilityIssue[] {
   const hasNav =
     document.querySelector("nav") ||
     document.querySelector('[role="navigation"]');
-  if (
-    !hasNav &&
-    document.querySelectorAll("a[href]").length > 5
-  ) {
+  if (!hasNav && document.querySelectorAll("a[href]").length > 5) {
     issues.push({
       id: uid(),
       category: "document",

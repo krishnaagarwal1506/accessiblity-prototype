@@ -29,16 +29,19 @@ chrome.runtime.onMessage.addListener(
           if (chrome.runtime.lastError) {
             console.warn(
               "[a11y-checker] Could not reach content script:",
-              chrome.runtime.lastError.message
+              chrome.runtime.lastError.message,
             );
           }
-        }
+        },
       );
       sendResponse({ status: "triggered" });
       return true;
     }
 
-    if (message.type === "HIGHLIGHT_ELEMENT" || message.type === "CLEAR_HIGHLIGHT") {
+    if (
+      message.type === "HIGHLIGHT_ELEMENT" ||
+      message.type === "CLEAR_HIGHLIGHT"
+    ) {
       // Forward to the active tab's content script
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tabId = tabs[0]?.id;
@@ -55,7 +58,7 @@ chrome.runtime.onMessage.addListener(
     }
 
     return true;
-  }
+  },
 );
 
 chrome.tabs.onRemoved.addListener((tabId) => {

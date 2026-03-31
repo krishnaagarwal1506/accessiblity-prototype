@@ -15,9 +15,7 @@ export function Header({
   onRefresh,
   onExport,
 }: HeaderProps) {
-  const timeAgo = lastScan
-    ? new Date(lastScan).toLocaleTimeString()
-    : null;
+  const timeAgo = lastScan ? new Date(lastScan).toLocaleTimeString() : null;
 
   return (
     <header
@@ -29,13 +27,25 @@ export function Header({
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="flex items-center gap-2">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--accent)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <path d="M8 14s1.5 2 4 2 4-2 4-2" />
             <line x1="9" y1="9" x2="9.01" y2="9" />
             <line x1="15" y1="9" x2="15.01" y2="9" />
           </svg>
-          <h1 className="text-sm font-semibold whitespace-nowrap" style={{ color: "var(--text-primary)" }}>
+          <h1
+            className="text-sm font-semibold whitespace-nowrap"
+            style={{ color: "var(--text-primary)" }}
+          >
             Accessibility Checker
           </h1>
         </div>
@@ -79,9 +89,24 @@ export function Header({
           title="Re-scan page"
         >
           {loading && (
-            <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            <svg
+              className="animate-spin h-3 w-3"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
           )}
           Scan

@@ -45,7 +45,9 @@ export function IssueCard({
     <div
       className="rounded-lg border transition-all"
       style={{
-        borderColor: expanded ? SEVERITY_COLORS[issue.severity] : "var(--border)",
+        borderColor: expanded
+          ? SEVERITY_COLORS[issue.severity]
+          : "var(--border)",
         background: "var(--bg-card)",
       }}
       onMouseEnter={onHighlight}
@@ -66,7 +68,9 @@ export function IssueCard({
         {/* Main content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-xs">{CATEGORY_ICONS[issue.category] || "❓"}</span>
+            <span className="text-xs">
+              {CATEGORY_ICONS[issue.category] || "❓"}
+            </span>
             <span
               className="text-xs font-medium"
               style={{ color: "var(--text-primary)" }}
@@ -129,7 +133,10 @@ export function IssueCard({
         >
           {/* Element preview */}
           <div className="mt-2.5 mb-2">
-            <div className="text-[10px] uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+            <div
+              className="text-[10px] uppercase tracking-wider font-medium mb-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
               Element
             </div>
             <code
@@ -145,7 +152,10 @@ export function IssueCard({
 
           {/* Selector */}
           <div className="mb-2">
-            <div className="text-[10px] uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+            <div
+              className="text-[10px] uppercase tracking-wider font-medium mb-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
               Selector
             </div>
             <code
@@ -161,7 +171,10 @@ export function IssueCard({
 
           {/* Help / fix suggestion */}
           <div>
-            <div className="text-[10px] uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+            <div
+              className="text-[10px] uppercase tracking-wider font-medium mb-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
               How to fix
             </div>
             <p
@@ -185,7 +198,13 @@ export function IssueCard({
               background: "var(--bg-secondary)",
             }}
           >
-            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="w-3 h-3"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>

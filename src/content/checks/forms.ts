@@ -11,7 +11,7 @@ export function checkForms(): AccessibilityIssue[] {
   const issues: AccessibilityIssue[] = [];
 
   const inputs = document.querySelectorAll(
-    "input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset']):not([type='image']), select, textarea"
+    "input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset']):not([type='image']), select, textarea",
   );
 
   for (const input of inputs) {
@@ -40,8 +40,7 @@ export function checkForms(): AccessibilityIssue[] {
         id: uid(),
         category: "forms",
         severity: "moderate",
-        message:
-          "Form input relies on placeholder as its only label",
+        message: "Form input relies on placeholder as its only label",
         element: truncateHTML(input.outerHTML),
         selector: getSelector(input),
         wcag: "3.3.2",
@@ -52,7 +51,7 @@ export function checkForms(): AccessibilityIssue[] {
 
   // Check for autocomplete on identity fields
   const identityInputs = document.querySelectorAll(
-    'input[type="email"], input[type="tel"], input[type="text"][name*="name"], input[type="text"][name*="address"]'
+    'input[type="email"], input[type="tel"], input[type="text"][name*="name"], input[type="text"][name*="address"]',
   );
   for (const input of identityInputs) {
     if (!isVisible(input)) continue;
@@ -61,11 +60,12 @@ export function checkForms(): AccessibilityIssue[] {
         id: uid(),
         category: "forms",
         severity: "minor",
-        message: "Input collecting personal data missing autocomplete attribute",
+        message:
+          "Input collecting personal data missing autocomplete attribute",
         element: truncateHTML(input.outerHTML),
         selector: getSelector(input),
         wcag: "1.3.5",
-        help: "Add an appropriate autocomplete attribute (e.g., autocomplete=\"email\") to help users fill in forms.",
+        help: 'Add an appropriate autocomplete attribute (e.g., autocomplete="email") to help users fill in forms.',
       });
     }
   }

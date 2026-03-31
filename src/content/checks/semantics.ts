@@ -39,7 +39,11 @@ export function checkSemantics(): AccessibilityIssue[] {
   for (const table of tables) {
     if (!isVisible(table)) continue;
     // Skip layout tables
-    if (table.getAttribute("role") === "presentation" || table.getAttribute("role") === "none") continue;
+    if (
+      table.getAttribute("role") === "presentation" ||
+      table.getAttribute("role") === "none"
+    )
+      continue;
 
     const headers = table.querySelectorAll("th");
     if (headers.length === 0) {

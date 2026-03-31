@@ -22,10 +22,16 @@ export function EmptyState({ onRefresh }: EmptyStateProps) {
           <polyline points="20 6 9 17 4 12" />
         </svg>
       </div>
-      <h2 className="text-lg font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+      <h2
+        className="text-lg font-medium mb-1"
+        style={{ color: "var(--text-primary)" }}
+      >
         No issues found
       </h2>
-      <p className="text-sm mb-4 max-w-xs" style={{ color: "var(--text-secondary)" }}>
+      <p
+        className="text-sm mb-4 max-w-xs"
+        style={{ color: "var(--text-secondary)" }}
+      >
         This page passed all accessibility checks. Great job!
       </p>
       <button

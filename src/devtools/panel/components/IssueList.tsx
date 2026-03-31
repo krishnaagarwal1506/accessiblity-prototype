@@ -58,15 +58,21 @@ export function IssueList({ issues }: IssueListProps) {
             onClick={() => setSortBy(key)}
             className="text-xs px-2 py-0.5 rounded transition-colors"
             style={{
-              background: sortBy === key ? "var(--accent-light)" : "transparent",
+              background:
+                sortBy === key ? "var(--accent-light)" : "transparent",
               color: sortBy === key ? "var(--accent)" : "var(--text-secondary)",
               fontWeight: sortBy === key ? 600 : 400,
             }}
           >
-            {key === "wcag" ? "WCAG" : key.charAt(0).toUpperCase() + key.slice(1)}
+            {key === "wcag"
+              ? "WCAG"
+              : key.charAt(0).toUpperCase() + key.slice(1)}
           </button>
         ))}
-        <span className="text-xs ml-auto" style={{ color: "var(--text-secondary)" }}>
+        <span
+          className="text-xs ml-auto"
+          style={{ color: "var(--text-secondary)" }}
+        >
           {issues.length} issue{issues.length !== 1 ? "s" : ""}
         </span>
       </div>

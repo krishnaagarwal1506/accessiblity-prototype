@@ -138,7 +138,12 @@ export function checkAria(): AccessibilityIssue[] {
   }
 
   // aria-labelledby / aria-describedby pointing to non-existent IDs
-  const ariaRefAttrs = ["aria-labelledby", "aria-describedby", "aria-controls", "aria-owns"];
+  const ariaRefAttrs = [
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-controls",
+    "aria-owns",
+  ];
   for (const attr of ariaRefAttrs) {
     const elements = document.querySelectorAll(`[${attr}]`);
     for (const el of elements) {

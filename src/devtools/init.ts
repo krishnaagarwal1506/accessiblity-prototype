@@ -9,5 +9,5 @@ chrome.devtools.panels.create(
         tabId: chrome.devtools.inspectedWindow.tabId,
       });
     });
-  }
+  },
 );

@@ -53,7 +53,7 @@ export function checkLinks(): AccessibilityIssue[] {
         element: truncateHTML(link.outerHTML),
         selector: getSelector(link),
         wcag: "2.4.4",
-        help: "Use descriptive link text that explains where the link goes. Avoid generic text like \"click here\".",
+        help: 'Use descriptive link text that explains where the link goes. Avoid generic text like "click here".',
       });
     }
 
