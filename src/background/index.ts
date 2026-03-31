@@ -8,6 +8,26 @@ const resultsCache = new Map<
 // Tracks which tabs currently have scanning enabled
 const enabledTabs = new Set<number>();
 
+function updateBadge(tabId: number, issues: AccessibilityIssue[]) {
+  const criticalCount = issues.filter((i) => i.severity === "critical").length;
+  const totalCount = issues.length;
+
+  if (totalCount === 0) {
+    chrome.action.setBadgeText({ text: "", tabId });
+    return;
+  }
+
+  const text = criticalCount > 0 ? String(criticalCount) : String(totalCount);
+  const bgColor = criticalCount > 0 ? "#dc2626" : "#ca8a04";
+
+  chrome.action.setBadgeText({ text, tabId });
+  chrome.action.setBadgeBackgroundColor({ color: bgColor, tabId });
+  chrome.action.setTitle({
+    title: `Accessibility Checker — ${totalCount} issue${totalCount !== 1 ? "s" : ""}${criticalCount > 0 ? ` (${criticalCount} critical)` : ""}`,
+    tabId,
+  });
+}
+
 chrome.runtime.onMessage.addListener(
   (message: Message, sender, sendResponse) => {
     if (message.type === "ACCESSIBILITY_ISSUES") {
@@ -18,6 +38,7 @@ chrome.runtime.onMessage.addListener(
           url: message.url,
           timestamp: message.timestamp,
         });
+        updateBadge(tabId, message.payload);
       }
       sendResponse({ status: "received" });
       return true;
@@ -45,6 +66,8 @@ chrome.runtime.onMessage.addListener(
       if (tabId) {
         enabledTabs.delete(tabId);
         resultsCache.delete(tabId);
+        chrome.action.setBadgeText({ text: "", tabId });
+        chrome.action.setTitle({ title: "Accessibility Checker", tabId });
         chrome.tabs.sendMessage(tabId, { type: "DISABLE_SCANNING" }, () => {
           if (chrome.runtime.lastError) {
             console.warn(
