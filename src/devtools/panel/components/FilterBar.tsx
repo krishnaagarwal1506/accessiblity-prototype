@@ -20,6 +20,7 @@ const CATEGORIES: { value: Category | "all"; label: string }[] = [
   { value: "links", label: "Links" },
   { value: "document", label: "Document" },
   { value: "semantics", label: "Semantics" },
+  { value: "media", label: "Media" },
 ];
 
 const SEVERITIES: { value: Severity | "all"; label: string }[] = [

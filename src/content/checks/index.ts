@@ -8,6 +8,7 @@ import { checkHeadings } from "./headings";
 import { checkLinks } from "./links";
 import { checkDocument } from "./document";
 import { checkSemantics } from "./semantics";
+import { checkMedia } from "./media";
 import { isHidden, getSelector } from "./utils";
 
 export interface CheckModule {
@@ -25,6 +26,7 @@ const checks: CheckModule[] = [
   { name: "links", fn: checkLinks },
   { name: "document", fn: checkDocument },
   { name: "semantics", fn: checkSemantics },
+  { name: "media", fn: checkMedia },
 ];
 
 export function runAllChecks(): AccessibilityIssue[] {

@@ -9,7 +9,8 @@ export type Category =
   | "headings"
   | "links"
   | "document"
-  | "semantics";
+  | "semantics"
+  | "media";
 
 export interface AccessibilityIssue {
   id: string;

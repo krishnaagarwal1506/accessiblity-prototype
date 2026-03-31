@@ -93,6 +93,27 @@ export function checkDocument(): AccessibilityIssue[] {
     });
   }
 
+  // WCAG 3.1.2 Language of Parts — elements with text in a different language
+  // should have a lang attribute
+  const foreignTextElements = document.querySelectorAll("[lang]");
+  for (const el of foreignTextElements) {
+    if (el === document.documentElement) continue; // already checked above
+    const lang = el.getAttribute("lang")!;
+    // Flag empty lang values
+    if (!lang.trim()) {
+      issues.push({
+        id: uid(),
+        category: "document",
+        severity: "moderate",
+        message: "Element has empty lang attribute",
+        element: truncateHTML(el.outerHTML),
+        selector: getSelector(el),
+        wcag: "3.1.2",
+        help: 'The lang attribute must contain a valid language code, e.g. lang="fr" for French.',
+      });
+    }
+  }
+
   // Viewport meta should not disable scaling
   const viewport = document.querySelector('meta[name="viewport"]');
   if (viewport) {

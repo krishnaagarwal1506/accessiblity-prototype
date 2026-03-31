@@ -29,6 +29,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
   links: "Links",
   document: "Document",
   semantics: "Semantics",
+  media: "Media",
 };
 
 export function SummaryBar({ issues }: SummaryBarProps) {

@@ -33,6 +33,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   links: "🔗",
   document: "📄",
   semantics: "🏷️",
+  media: "🎬",
 };
 
 export function IssueCard({
