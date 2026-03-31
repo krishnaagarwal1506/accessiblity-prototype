@@ -1,11 +1,16 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { AccessibilityIssue, Severity, HighlightResult } from "@/types";
 import { IssueCard } from "./IssueCard";
+import { getFingerprint, type SuppressedIssue } from "../suppress";
 
 interface IssueListProps {
   issues: AccessibilityIssue[];
   focusIssueId?: string | null;
   onFocusHandled?: () => void;
+  showSuppressed?: boolean;
+  suppressedMap?: Record<string, SuppressedIssue>;
+  onSuppress?: (issue: AccessibilityIssue) => void;
+  onUnsuppress?: (fingerprint: string) => void;
 }
 
 type SortKey = "severity" | "category" | "wcag";
@@ -21,6 +26,10 @@ export function IssueList({
   issues,
   focusIssueId,
   onFocusHandled,
+  showSuppressed,
+  suppressedMap,
+  onSuppress,
+  onUnsuppress,
 }: IssueListProps) {
   const [sortBy, setSortBy] = useState<SortKey>("severity");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -119,23 +128,38 @@ export function IssueList({
 
       {/* Issues */}
       <div className="flex flex-col gap-2">
-        {sorted.map((issue) => (
-          <div
-            key={issue.id}
-            ref={(el) => {
-              cardRefs.current[issue.id] = el;
-            }}
-          >
-            <IssueCard
-              issue={issue}
-              expanded={expandedId === issue.id}
-              onToggle={() => toggleExpand(issue.id)}
-              onHighlight={() => highlightElement(issue)}
-              onClearHighlight={clearHighlight}
-              highlightStatus={highlightStatuses[issue.id] ?? null}
-            />
-          </div>
-        ))}
+        {sorted.map((issue) => {
+          const fp = getFingerprint(issue.selector, issue.message);
+          const isSuppressed = !!suppressedMap?.[fp];
+          return (
+            <div
+              key={issue.id}
+              ref={(el) => {
+                cardRefs.current[issue.id] = el;
+              }}
+            >
+              <IssueCard
+                issue={issue}
+                expanded={expandedId === issue.id}
+                onToggle={() => toggleExpand(issue.id)}
+                onHighlight={() => highlightElement(issue)}
+                onClearHighlight={clearHighlight}
+                highlightStatus={highlightStatuses[issue.id] ?? null}
+                isSuppressed={isSuppressed}
+                onSuppress={
+                  !showSuppressed && onSuppress
+                    ? () => onSuppress(issue)
+                    : undefined
+                }
+                onUnsuppress={
+                  showSuppressed && onUnsuppress
+                    ? () => onUnsuppress(fp)
+                    : undefined
+                }
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

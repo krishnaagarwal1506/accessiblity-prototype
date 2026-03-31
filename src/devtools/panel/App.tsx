@@ -7,6 +7,13 @@ import { EmptyState } from "./components/EmptyState";
 import { Header } from "./components/Header";
 import { ScoreGauge } from "./components/ScoreGauge";
 import { matchesWcagLevel, type WcagLevel } from "./wcag-levels";
+import {
+  getSuppressedIssues,
+  suppressIssue,
+  unsuppressIssue,
+  getFingerprint,
+  type SuppressedIssue,
+} from "./suppress";
 
 export default function App() {
   const [issues, setIssues] = useState<AccessibilityIssue[]>([]);
@@ -19,8 +26,17 @@ export default function App() {
   const [pageUrl, setPageUrl] = useState("");
   const [lastScan, setLastScan] = useState<number | null>(null);
   const [focusIssueId, setFocusIssueId] = useState<string | null>(null);
+  const [suppressedMap, setSuppressedMap] = useState<
+    Record<string, SuppressedIssue>
+  >({});
+  const [showSuppressed, setShowSuppressed] = useState(false);
 
   const tabId = chrome.devtools.inspectedWindow.tabId;
+
+  // Load suppressed issues on mount
+  useEffect(() => {
+    getSuppressedIssues().then(setSuppressedMap);
+  }, []);
 
   // Single listener handles both scan results and "show in panel" from tooltip
   useEffect(() => {
@@ -80,8 +96,43 @@ export default function App() {
     chrome.runtime.sendMessage({ type: "RUN_ACCESSIBILITY_CHECK", tabId });
   }, [isEnabled, tabId]);
 
+  const handleSuppress = useCallback(
+    async (issue: AccessibilityIssue) => {
+      await suppressIssue(issue.selector, issue.message, "Manually dismissed");
+      const updated = await getSuppressedIssues();
+      setSuppressedMap(updated);
+    },
+    [],
+  );
+
+  const handleUnsuppress = useCallback(async (fingerprint: string) => {
+    await unsuppressIssue(fingerprint);
+    const updated = await getSuppressedIssues();
+    setSuppressedMap(updated);
+  }, []);
+
+  // Count how many current issues are suppressed
+  const suppressedCount = useMemo(() => {
+    return issues.filter(
+      (i) => suppressedMap[getFingerprint(i.selector, i.message)],
+    ).length;
+  }, [issues, suppressedMap]);
+
+  // Active (non-suppressed) issues for scoring and display
+  const activeIssues = useMemo(() => {
+    return issues.filter(
+      (i) => !suppressedMap[getFingerprint(i.selector, i.message)],
+    );
+  }, [issues, suppressedMap]);
+
   const filteredIssues = useMemo(() => {
-    return issues.filter((issue) => {
+    const source = showSuppressed
+      ? issues.filter(
+          (i) => !!suppressedMap[getFingerprint(i.selector, i.message)],
+        )
+      : activeIssues;
+
+    return source.filter((issue) => {
       if (categoryFilter !== "all" && issue.category !== categoryFilter)
         return false;
       if (severityFilter !== "all" && issue.severity !== severityFilter)
@@ -98,12 +149,21 @@ export default function App() {
       }
       return true;
     });
-  }, [issues, categoryFilter, severityFilter, wcagLevel, searchQuery]);
+  }, [
+    issues,
+    activeIssues,
+    suppressedMap,
+    showSuppressed,
+    categoryFilter,
+    severityFilter,
+    wcagLevel,
+    searchQuery,
+  ]);
 
   const exportCSV = useCallback(() => {
-    if (issues.length === 0) return;
+    if (activeIssues.length === 0) return;
     const header = "Severity,Category,WCAG,Message,Element,Help\n";
-    const rows = issues
+    const rows = activeIssues
       .map(
         (i) =>
           `"${i.severity}","${i.category}","${i.wcag}","${i.message.replace(/"/g, '""')}","${i.element.replace(/"/g, '""')}","${i.help.replace(/"/g, '""')}"`,
@@ -117,14 +177,14 @@ export default function App() {
     a.download = `a11y-report-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [issues]);
+  }, [activeIssues]);
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
       <Header
         pageUrl={pageUrl}
         lastScan={lastScan}
-        issueCount={issues.length}
+        issueCount={activeIssues.length}
         loading={loading}
         isEnabled={isEnabled}
         onToggle={toggleScanning}
@@ -167,8 +227,8 @@ export default function App() {
         <>
           {issues.length > 0 && (
             <>
-              <ScoreGauge issues={issues} />
-              <SummaryBar issues={issues} />
+              <ScoreGauge issues={activeIssues} />
+              <SummaryBar issues={activeIssues} />
               <FilterBar
                 categoryFilter={categoryFilter}
                 severityFilter={severityFilter}
@@ -179,6 +239,41 @@ export default function App() {
                 onWcagLevelChange={setWcagLevel}
                 onSearchChange={setSearchQuery}
               />
+
+              {/* Suppressed toggle */}
+              {suppressedCount > 0 && (
+                <div
+                  className="px-4 py-2 border-b flex items-center justify-between"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <button
+                    onClick={() => setShowSuppressed(!showSuppressed)}
+                    className="text-xs flex items-center gap-1.5 transition-colors"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    <svg
+                      className="w-3.5 h-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      {showSuppressed ? (
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      ) : (
+                        <>
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </>
+                      )}
+                    </svg>
+                    {showSuppressed
+                      ? `Showing ${suppressedCount} suppressed — click to hide`
+                      : `${suppressedCount} suppressed issue${suppressedCount !== 1 ? "s" : ""} — click to view`}
+                  </button>
+                </div>
+              )}
             </>
           )}
 
@@ -226,6 +321,10 @@ export default function App() {
                 issues={filteredIssues}
                 focusIssueId={focusIssueId}
                 onFocusHandled={() => setFocusIssueId(null)}
+                showSuppressed={showSuppressed}
+                suppressedMap={suppressedMap}
+                onSuppress={handleSuppress}
+                onUnsuppress={handleUnsuppress}
               />
             )}
           </main>
