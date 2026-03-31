@@ -28,6 +28,7 @@ export function checkMedia(): AccessibilityIssue[] {
         selector: getSelector(video),
         wcag: "1.2.2",
         help: 'Add a <track kind="captions" src="..." srclang="en" label="English"> element inside the <video>.',
+        fixSnippet: '<video src="...">\n  <track kind="captions" src="captions.vtt" srclang="en" label="English">\n</video>',
       });
     }
   }
@@ -80,6 +81,7 @@ export function checkMedia(): AccessibilityIssue[] {
         selector: getSelector(iframe),
         wcag: "4.1.2",
         help: 'Add a title attribute to the <iframe> describing its content, e.g. <iframe title="YouTube video player">.',
+        fixSnippet: '<iframe src="..." title="Description of iframe content"></iframe>',
       });
     }
   }

@@ -30,6 +30,7 @@ export function checkLinks(): AccessibilityIssue[] {
     const text = getAccessibleName(link).trim();
 
     if (!text) {
+      const href = link.getAttribute("href") || "#";
       issues.push({
         id: uid(),
         category: "links",
@@ -39,6 +40,7 @@ export function checkLinks(): AccessibilityIssue[] {
         selector: getSelector(link),
         wcag: "4.1.2",
         help: "Add text content, aria-label, or aria-labelledby to give this link an accessible name.",
+        fixSnippet: `<a href="${truncateHTML(href, 40)}" aria-label="Descriptive label">...</a>`,
       });
       continue;
     }

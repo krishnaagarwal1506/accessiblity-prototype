@@ -24,6 +24,8 @@ export function checkForms(): AccessibilityIssue[] {
     const placeholder = input.getAttribute("placeholder");
 
     if (!hasLabel && !ariaLabel && !ariaLabelledby && !title) {
+      const inputTag = input.tagName.toLowerCase();
+      const inputId = input.id || "my-input";
       issues.push({
         id: uid(),
         category: "forms",
@@ -33,6 +35,7 @@ export function checkForms(): AccessibilityIssue[] {
         selector: getSelector(input),
         wcag: "1.3.1",
         help: "Associate a <label> using for/id, wrap the input in a <label>, or add aria-label / aria-labelledby.",
+        fixSnippet: `<label for="${inputId}">Label text</label>\n<${inputTag} id="${inputId}">`,
       });
     } else if (!hasLabel && !ariaLabelledby && placeholder && !ariaLabel) {
       // Only has placeholder — not a reliable label

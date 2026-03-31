@@ -14,6 +14,7 @@ export function checkImages(): AccessibilityIssue[] {
     if (!isVisible(img)) continue;
 
     if (!img.hasAttribute("alt")) {
+      const src = img.getAttribute("src") || "...";
       issues.push({
         id: uid(),
         category: "images",
@@ -23,6 +24,7 @@ export function checkImages(): AccessibilityIssue[] {
         selector: getSelector(img),
         wcag: "1.1.1",
         help: 'Add an alt attribute describing the image. Use alt="" for decorative images.',
+        fixSnippet: `<img src="${truncateHTML(src, 40)}" alt="Descriptive text here">`,
       });
     } else if (
       img.alt === "" &&
@@ -60,6 +62,7 @@ export function checkImages(): AccessibilityIssue[] {
         selector: getSelector(input),
         wcag: "1.1.1",
         help: "Add an alt attribute describing the button action.",
+        fixSnippet: '<input type="image" alt="Submit form" src="...">',
       });
     }
   }

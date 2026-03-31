@@ -94,6 +94,7 @@ export function checkSemantics(): AccessibilityIssue[] {
         selector: getSelector(btn),
         wcag: "4.1.2",
         help: "Add text content, aria-label, or aria-labelledby to give this button an accessible name.",
+        fixSnippet: '<button aria-label="Descriptive label">...</button>',
       });
     }
   }

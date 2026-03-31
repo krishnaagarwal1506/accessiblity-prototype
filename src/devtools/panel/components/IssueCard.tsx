@@ -211,6 +211,28 @@ export function IssueCard({
             </p>
           </div>
 
+          {/* Fix snippet */}
+          {issue.fixSnippet && (
+            <div className="mt-2">
+              <div
+                className="text-[10px] uppercase tracking-wider font-medium mb-1"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Suggested fix
+              </div>
+              <code
+                className="block text-xs p-2 rounded overflow-x-auto whitespace-pre-wrap break-all"
+                style={{
+                  background: "color-mix(in srgb, var(--success) 8%, var(--bg-secondary))",
+                  color: "var(--success)",
+                  border: "1px solid color-mix(in srgb, var(--success) 20%, transparent)",
+                }}
+              >
+                {issue.fixSnippet}
+              </code>
+            </div>
+          )}
+
           {/* Hidden element explanation */}
           {issue.hidden && (
             <div

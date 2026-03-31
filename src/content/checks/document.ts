@@ -23,6 +23,7 @@ export function checkDocument(): AccessibilityIssue[] {
       selector: "head",
       wcag: "2.4.2",
       help: "Add a descriptive <title> element inside <head>.",
+      fixSnippet: "<title>Page Title - Site Name</title>",
     });
   }
 
@@ -38,6 +39,7 @@ export function checkDocument(): AccessibilityIssue[] {
       selector: "html",
       wcag: "3.1.1",
       help: 'Add a lang attribute to the <html> element, e.g. <html lang="en">.',
+      fixSnippet: '<html lang="en">',
     });
   }
 

@@ -21,6 +21,7 @@ export interface AccessibilityIssue {
   selector: string; // CSS selector to locate the element
   wcag: string; // WCAG criterion e.g. "1.1.1"
   help: string; // short help text / fix suggestion
+  fixSnippet?: string; // corrected HTML snippet suggestion
   hidden?: boolean; // true if element is not visible on page
   parentSelector?: string; // selector of nearest visible ancestor (for hidden elements)
 }
