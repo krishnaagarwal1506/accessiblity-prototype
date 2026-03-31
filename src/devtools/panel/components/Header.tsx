@@ -3,6 +3,8 @@ interface HeaderProps {
   lastScan: number | null;
   issueCount: number;
   loading: boolean;
+  isEnabled: boolean;
+  onToggle: () => void;
   onRefresh: () => void;
   onExport: () => void;
 }
@@ -12,6 +14,8 @@ export function Header({
   lastScan,
   issueCount,
   loading,
+  isEnabled,
+  onToggle,
   onRefresh,
   onExport,
 }: HeaderProps) {
@@ -61,7 +65,40 @@ export function Header({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        {timeAgo && (
+        {/* Scanning toggle */}
+        <button
+          role="switch"
+          aria-checked={isEnabled}
+          onClick={onToggle}
+          className="flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors"
+          style={{
+            background: isEnabled
+              ? "color-mix(in srgb, var(--accent) 12%, transparent)"
+              : "var(--bg-secondary)",
+            border: `1px solid ${isEnabled ? "var(--accent)" : "var(--border)"}`,
+          }}
+          title={isEnabled ? "Scanning enabled — click to disable" : "Scanning disabled — click to enable"}
+        >
+          <span
+            className="text-xs font-medium"
+            style={{ color: isEnabled ? "var(--accent)" : "var(--text-secondary)" }}
+          >
+            {isEnabled ? "On" : "Off"}
+          </span>
+          {/* Track */}
+          <span
+            className="relative inline-flex h-4 w-7 rounded-full transition-colors"
+            style={{ background: isEnabled ? "var(--accent)" : "var(--border)" }}
+          >
+            {/* Thumb */}
+            <span
+              className="absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform"
+              style={{ transform: isEnabled ? "translateX(14px)" : "translateX(2px)" }}
+            />
+          </span>
+        </button>
+
+        {isEnabled && timeAgo && (
           <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
             {issueCount} issue{issueCount !== 1 ? "s" : ""} · {timeAgo}
           </span>
@@ -69,7 +106,7 @@ export function Header({
 
         <button
           onClick={onExport}
-          disabled={issueCount === 0}
+          disabled={!isEnabled || issueCount === 0}
           className="px-3 py-1.5 text-xs font-medium rounded-md border transition-colors disabled:opacity-40"
           style={{
             background: "var(--bg-secondary)",
@@ -83,7 +120,7 @@ export function Header({
 
         <button
           onClick={onRefresh}
-          disabled={loading}
+          disabled={!isEnabled || loading}
           className="px-3 py-1.5 text-xs font-medium rounded-md text-white transition-colors disabled:opacity-60 flex items-center gap-1.5"
           style={{ background: "var(--accent)" }}
           title="Re-scan page"

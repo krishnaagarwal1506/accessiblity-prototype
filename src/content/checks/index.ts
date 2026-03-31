@@ -8,6 +8,7 @@ import { checkHeadings } from "./headings";
 import { checkLinks } from "./links";
 import { checkDocument } from "./document";
 import { checkSemantics } from "./semantics";
+import { isHidden, getSelector } from "./utils";
 
 export interface CheckModule {
   name: string;
@@ -38,5 +39,42 @@ export function runAllChecks(): AccessibilityIssue[] {
     }
   }
 
-  return allIssues;
+  // Post-process: filter out our own overlay elements, tag hidden elements
+  const results: AccessibilityIssue[] = [];
+  for (const issue of allIssues) {
+    try {
+      const el = document.querySelector(issue.selector);
+      if (!el) {
+        results.push(issue);
+        continue;
+      }
+
+      // Skip our own injected overlay / tooltip elements.
+      // Only skip elements that ARE our tooltip — not page elements
+      // that merely carry a highlight class like "a11y-checker-highlight".
+      if (
+        el.closest(".a11y-checker-tooltip") ||
+        (el instanceof HTMLElement &&
+          el.classList.contains("a11y-checker-tooltip"))
+      )
+        continue;
+
+      // Tag hidden elements
+      if (isHidden(el)) {
+        issue.hidden = true;
+        let ancestor: Element | null = el.parentElement;
+        while (ancestor && ancestor !== document.documentElement) {
+          if (!isHidden(ancestor)) {
+            issue.parentSelector = getSelector(ancestor);
+            break;
+          }
+          ancestor = ancestor.parentElement;
+        }
+      }
+    } catch {
+      /* keep issue if selector is weird */
+    }
+    results.push(issue);
+  }
+  return results;
 }

@@ -1,9 +1,11 @@
-import { useState, useCallback } from "react";
-import type { AccessibilityIssue, Severity } from "@/types";
+import { useState, useCallback, useEffect, useRef } from "react";
+import type { AccessibilityIssue, Severity, HighlightResult } from "@/types";
 import { IssueCard } from "./IssueCard";
 
 interface IssueListProps {
   issues: AccessibilityIssue[];
+  focusIssueId?: string | null;
+  onFocusHandled?: () => void;
 }
 
 type SortKey = "severity" | "category" | "wcag";
@@ -15,9 +17,31 @@ const SEVERITY_WEIGHT: Record<Severity, number> = {
   minor: 3,
 };
 
-export function IssueList({ issues }: IssueListProps) {
+export function IssueList({
+  issues,
+  focusIssueId,
+  onFocusHandled,
+}: IssueListProps) {
   const [sortBy, setSortBy] = useState<SortKey>("severity");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [highlightStatuses, setHighlightStatuses] = useState<
+    Record<string, HighlightResult["status"] | "loading">
+  >({});
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Handle SHOW_IN_PANEL focus
+  useEffect(() => {
+    if (focusIssueId) {
+      setExpandedId(focusIssueId);
+      setTimeout(() => {
+        cardRefs.current[focusIssueId]?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 50);
+      onFocusHandled?.();
+    }
+  }, [focusIssueId, onFocusHandled]);
 
   const sorted = [...issues].sort((a, b) => {
     if (sortBy === "severity")
@@ -30,18 +54,34 @@ export function IssueList({ issues }: IssueListProps) {
     setExpandedId((prev) => (prev === id ? null : id));
   }, []);
 
-  const highlightElement = useCallback((selector: string) => {
-    chrome.runtime.sendMessage({
-      type: "HIGHLIGHT_ELEMENT",
-      selector,
-      tabId: chrome.devtools.inspectedWindow.tabId,
-    });
+  const highlightElement = useCallback((issue: AccessibilityIssue) => {
+    setHighlightStatuses((prev) => ({ ...prev, [issue.id]: "loading" }));
+    chrome.runtime.sendMessage(
+      {
+        type: "HIGHLIGHT_ELEMENT",
+        selector: issue.selector,
+        issueId: issue.id,
+      },
+      (response: HighlightResult | undefined) => {
+        const status = response?.status ?? "not-found";
+        setHighlightStatuses((prev) => ({ ...prev, [issue.id]: status }));
+        // Clear status after a few seconds for found/not-found
+        if (status !== "hidden") {
+          setTimeout(() => {
+            setHighlightStatuses((prev) => {
+              const next = { ...prev };
+              delete next[issue.id];
+              return next;
+            });
+          }, 3000);
+        }
+      },
+    );
   }, []);
 
   const clearHighlight = useCallback(() => {
     chrome.runtime.sendMessage({
       type: "CLEAR_HIGHLIGHT",
-      tabId: chrome.devtools.inspectedWindow.tabId,
     });
   }, []);
 
@@ -80,14 +120,21 @@ export function IssueList({ issues }: IssueListProps) {
       {/* Issues */}
       <div className="flex flex-col gap-2">
         {sorted.map((issue) => (
-          <IssueCard
+          <div
             key={issue.id}
-            issue={issue}
-            expanded={expandedId === issue.id}
-            onToggle={() => toggleExpand(issue.id)}
-            onHighlight={() => highlightElement(issue.selector)}
-            onClearHighlight={clearHighlight}
-          />
+            ref={(el) => {
+              cardRefs.current[issue.id] = el;
+            }}
+          >
+            <IssueCard
+              issue={issue}
+              expanded={expandedId === issue.id}
+              onToggle={() => toggleExpand(issue.id)}
+              onHighlight={() => highlightElement(issue)}
+              onClearHighlight={clearHighlight}
+              highlightStatus={highlightStatuses[issue.id] ?? null}
+            />
+          </div>
         ))}
       </div>
     </div>

@@ -1,4 +1,4 @@
-import type { AccessibilityIssue, Severity } from "@/types";
+import type { AccessibilityIssue, Severity, HighlightResult } from "@/types";
 
 interface IssueCardProps {
   issue: AccessibilityIssue;
@@ -6,6 +6,7 @@ interface IssueCardProps {
   onToggle: () => void;
   onHighlight: () => void;
   onClearHighlight: () => void;
+  highlightStatus?: HighlightResult["status"] | "loading" | null;
 }
 
 const SEVERITY_COLORS: Record<Severity, string> = {
@@ -40,6 +41,7 @@ export function IssueCard({
   onToggle,
   onHighlight,
   onClearHighlight,
+  highlightStatus,
 }: IssueCardProps) {
   return (
     <div
@@ -106,6 +108,29 @@ export function IssueCard({
             >
               {issue.category}
             </span>
+            {issue.hidden && (
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded flex items-center gap-0.5"
+                style={{
+                  background: "rgba(161, 98, 7, 0.15)",
+                  color: "var(--moderate, #a16207)",
+                }}
+                title="This element is not currently visible (e.g. inside a closed dropdown, modal, or hover menu)"
+              >
+                <svg
+                  className="w-2.5 h-2.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                hidden
+              </span>
+            )}
           </div>
         </div>
 
@@ -185,31 +210,140 @@ export function IssueCard({
             </p>
           </div>
 
-          {/* Highlight button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onHighlight();
-            }}
-            className="mt-2.5 text-xs px-2.5 py-1 rounded flex items-center gap-1.5 border transition-colors"
-            style={{
-              borderColor: "var(--border)",
-              color: "var(--accent)",
-              background: "var(--bg-secondary)",
-            }}
-          >
-            <svg
-              className="w-3 h-3"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+          {/* Hidden element explanation */}
+          {issue.hidden && (
+            <div
+              className="mt-2 p-2 rounded text-xs leading-relaxed"
+              style={{
+                background: "rgba(161, 98, 7, 0.08)",
+                border: "1px solid rgba(161, 98, 7, 0.2)",
+                color: "var(--text-primary)",
+              }}
             >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            Highlight on page
-          </button>
+              <div
+                className="flex items-center gap-1.5 mb-1 font-medium"
+                style={{ color: "var(--moderate, #a16207)" }}
+              >
+                <svg
+                  className="w-3 h-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                Not currently visible
+              </div>
+              <span style={{ color: "var(--text-secondary)" }}>
+                This element is hidden (e.g. inside a closed dropdown, modal, or
+                hover menu).{" "}
+                {issue.parentSelector && (
+                  <>
+                    Nearest visible parent:{" "}
+                    <code
+                      className="px-1 py-0.5 rounded"
+                      style={{
+                        background: "var(--bg-secondary)",
+                        color: "var(--accent)",
+                      }}
+                    >
+                      {issue.parentSelector}
+                    </code>
+                  </>
+                )}
+              </span>
+            </div>
+          )}
+
+          {/* Highlight button + status feedback */}
+          <div className="mt-2.5 flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onHighlight();
+              }}
+              disabled={highlightStatus === "loading"}
+              className="text-xs px-2.5 py-1 rounded flex items-center gap-1.5 border transition-colors"
+              style={{
+                borderColor: "var(--border)",
+                color: "var(--accent)",
+                background: "var(--bg-secondary)",
+                opacity: highlightStatus === "loading" ? 0.6 : 1,
+              }}
+            >
+              {highlightStatus === "loading" ? (
+                <svg
+                  className="w-3 h-3 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-3 h-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              )}
+              Find element
+            </button>
+
+            {highlightStatus === "hidden" && (
+              <span
+                className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1"
+                style={{
+                  background: "rgba(161, 98, 7, 0.15)",
+                  color: "var(--moderate)",
+                }}
+              >
+                <svg
+                  className="w-3 h-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                Element is hidden — parent highlighted
+              </span>
+            )}
+
+            {highlightStatus === "not-found" && (
+              <span
+                className="text-[10px] px-2 py-0.5 rounded"
+                style={{
+                  background: "rgba(185, 28, 28, 0.12)",
+                  color: "var(--critical)",
+                }}
+              >
+                Element not found in DOM
+              </span>
+            )}
+          </div>
         </div>
       )}
     </div>
