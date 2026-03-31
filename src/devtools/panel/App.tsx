@@ -5,6 +5,7 @@ import { FilterBar } from "./components/FilterBar";
 import { IssueList } from "./components/IssueList";
 import { EmptyState } from "./components/EmptyState";
 import { Header } from "./components/Header";
+import { ScoreGauge } from "./components/ScoreGauge";
 
 export default function App() {
   const [issues, setIssues] = useState<AccessibilityIssue[]>([]);
@@ -163,6 +164,7 @@ export default function App() {
         <>
           {issues.length > 0 && (
             <>
+              <ScoreGauge issues={issues} />
               <SummaryBar issues={issues} />
               <FilterBar
                 categoryFilter={categoryFilter}
