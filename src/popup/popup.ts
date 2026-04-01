@@ -1,7 +1,7 @@
 import type { AccessibilityIssue, Severity } from "@/types";
 
 const SEVERITY_WEIGHTS: Record<Severity, number> = {
-  critical: 8,
+  critical: 12,
   serious: 5,
   moderate: 3,
   minor: 1,
@@ -16,9 +16,25 @@ const SEVERITY_COLORS: Record<Severity, string> = {
 
 function calculateScore(issues: AccessibilityIssue[]): number {
   if (issues.length === 0) return 100;
-  let deductions = 0;
-  for (const issue of issues) deductions += SEVERITY_WEIGHTS[issue.severity];
-  return Math.max(0, Math.round(100 - deductions));
+
+  // Group by type so repeated identical issues scale logarithmically
+  const groups = new Map<string, { weight: number; count: number }>();
+  for (const issue of issues) {
+    const key = `${issue.category}:${issue.wcag}:${issue.severity}`;
+    const existing = groups.get(key);
+    if (existing) {
+      existing.count++;
+    } else {
+      groups.set(key, { weight: SEVERITY_WEIGHTS[issue.severity], count: 1 });
+    }
+  }
+
+  let totalWeight = 0;
+  for (const { weight, count } of groups.values()) {
+    totalWeight += weight * (1 + Math.log(count));
+  }
+
+  return Math.max(0, Math.round(100 * Math.exp(-totalWeight / 400)));
 }
 
 function getScoreColor(score: number): string {
@@ -46,11 +62,15 @@ async function init() {
   // Actually, let's query the background directly.
   chrome.runtime.sendMessage(
     { type: "GET_POPUP_DATA", tabId: tab.id },
-    (response: {
-      payload?: AccessibilityIssue[];
-      url?: string;
-      timestamp?: number;
-    } | undefined) => {
+    (
+      response:
+        | {
+            payload?: AccessibilityIssue[];
+            url?: string;
+            timestamp?: number;
+          }
+        | undefined,
+    ) => {
       if (chrome.runtime.lastError || !response?.payload) {
         // No data available
         return;
@@ -69,7 +89,8 @@ async function init() {
       const color = getScoreColor(score);
       document.getElementById("score-num")!.textContent = String(score);
       document.getElementById("score-num")!.style.color = color;
-      document.getElementById("score-label")!.textContent = getScoreLabel(score);
+      document.getElementById("score-label")!.textContent =
+        getScoreLabel(score);
       document.getElementById("score-label")!.style.color = color;
 
       // Arc: 270 degrees = 131.95 of 175.93 circumference
@@ -92,7 +113,12 @@ async function init() {
       };
       for (const i of issues) counts[i.severity]++;
       const row = document.getElementById("severity-row")!;
-      for (const sev of ["critical", "serious", "moderate", "minor"] as Severity[]) {
+      for (const sev of [
+        "critical",
+        "serious",
+        "moderate",
+        "minor",
+      ] as Severity[]) {
         if (counts[sev] === 0) continue;
         const pill = document.createElement("span");
         pill.className = "severity-pill";
@@ -104,8 +130,9 @@ async function init() {
       document.getElementById("page-url")!.textContent = url;
       document.getElementById("page-url")!.title = url;
       if (timestamp) {
-        document.getElementById("scan-time")!.textContent =
-          new Date(timestamp).toLocaleTimeString();
+        document.getElementById("scan-time")!.textContent = new Date(
+          timestamp,
+        ).toLocaleTimeString();
       }
     },
   );

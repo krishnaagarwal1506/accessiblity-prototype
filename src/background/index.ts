@@ -22,6 +22,7 @@ function updateBadge(tabId: number, issues: AccessibilityIssue[]) {
 
   chrome.action.setBadgeText({ text, tabId });
   chrome.action.setBadgeBackgroundColor({ color: bgColor, tabId });
+  chrome.action.setBadgeTextColor({ color: "#ffffff", tabId });
   chrome.action.setTitle({
     title: `Accessibility Checker — ${totalCount} issue${totalCount !== 1 ? "s" : ""}${criticalCount > 0 ? ` (${criticalCount} critical)` : ""}`,
     tabId,

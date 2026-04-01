@@ -6,7 +6,7 @@ interface ScoreGaugeProps {
 }
 
 const SEVERITY_WEIGHTS = {
-  critical: 8,
+  critical: 12,
   serious: 5,
   moderate: 3,
   minor: 1,
@@ -15,12 +15,30 @@ const SEVERITY_WEIGHTS = {
 export function calculateScore(issues: AccessibilityIssue[]): number {
   if (issues.length === 0) return 100;
 
-  let deductions = 0;
+  // Group issues by type (category + WCAG criterion + severity) so that
+  // repeated instances of the same problem (e.g. 28 SVGs missing alt)
+  // don't each apply full penalty — they're really one pattern.
+  const groups = new Map<string, { weight: number; count: number }>();
   for (const issue of issues) {
-    deductions += SEVERITY_WEIGHTS[issue.severity];
+    const key = `${issue.category}:${issue.wcag}:${issue.severity}`;
+    const existing = groups.get(key);
+    if (existing) {
+      existing.count++;
+    } else {
+      groups.set(key, { weight: SEVERITY_WEIGHTS[issue.severity], count: 1 });
+    }
   }
 
-  return Math.max(0, Math.round(100 - deductions));
+  // Each group: first instance = full weight, additional instances scale
+  // logarithmically: weight × (1 + ln(count))
+  let totalWeight = 0;
+  for (const { weight, count } of groups.values()) {
+    totalWeight += weight * (1 + Math.log(count));
+  }
+
+  // Exponential decay (K=400) gives a smooth curve:
+  //   0 issues → 100, light issues → 90s, serious mix → 65-85, terrible → <50
+  return Math.max(0, Math.round(100 * Math.exp(-totalWeight / 400)));
 }
 
 function getScoreColor(score: number): string {
@@ -89,10 +107,7 @@ export function ScoreGauge({ issues }: ScoreGaugeProps) {
           className="absolute inset-0 flex flex-col items-center justify-center"
           style={{ paddingBottom: 4 }}
         >
-          <span
-            className="text-2xl font-bold leading-none"
-            style={{ color }}
-          >
+          <span className="text-2xl font-bold leading-none" style={{ color }}>
             {score}
           </span>
           <span
@@ -103,10 +118,7 @@ export function ScoreGauge({ issues }: ScoreGaugeProps) {
           </span>
         </div>
       </div>
-      <span
-        className="text-xs font-medium"
-        style={{ color }}
-      >
+      <span className="text-xs font-medium" style={{ color }}>
         {label}
       </span>
     </div>
