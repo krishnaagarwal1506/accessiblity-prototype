@@ -80,6 +80,12 @@ export interface GetScanStateMessage {
   tabId: number;
 }
 
+/** Sent from popup → background to get cached scan results for a tab */
+export interface GetPopupDataMessage {
+  type: "GET_POPUP_DATA";
+  tabId: number;
+}
+
 export type HighlightResult = {
   status: "found" | "hidden" | "not-found";
   parentSelector?: string;
@@ -94,4 +100,5 @@ export type Message =
   | EnableScanningMessage
   | DisableScanningMessage
   | CheckScanStateMessage
-  | GetScanStateMessage;
+  | GetScanStateMessage
+  | GetPopupDataMessage;

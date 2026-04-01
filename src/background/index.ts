@@ -94,6 +94,13 @@ chrome.runtime.onMessage.addListener(
       return true;
     }
 
+    // Popup queries cached results for a tab
+    if (message.type === "GET_POPUP_DATA") {
+      const cached = resultsCache.get(message.tabId);
+      sendResponse(cached || {});
+      return true;
+    }
+
     if (message.type === "RUN_ACCESSIBILITY_CHECK") {
       const tabId = message.tabId;
       chrome.tabs.sendMessage(
