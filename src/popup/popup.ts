@@ -51,17 +51,95 @@ function getScoreLabel(score: number): string {
   return "Poor";
 }
 
+function renderResults(
+  issues: AccessibilityIssue[],
+  url: string,
+  timestamp: number,
+) {
+  // Hide no-data, show results
+  document.getElementById("no-data")!.style.display = "none";
+  document.getElementById("results")!.style.display = "block";
+
+  // Score
+  const score = calculateScore(issues);
+  const color = getScoreColor(score);
+  document.getElementById("score-num")!.textContent = String(score);
+  document.getElementById("score-num")!.style.color = color;
+  document.getElementById("score-label")!.textContent = getScoreLabel(score);
+  document.getElementById("score-label")!.style.color = color;
+
+  // Arc: 270 degrees = 131.95 of 175.93 circumference
+  const arcLength = 131.95;
+  const filled = arcLength * (score / 100);
+  const arc = document.getElementById("score-arc")!;
+  arc.style.strokeDasharray = `${filled} 175.93`;
+  arc.style.stroke = color;
+
+  // Issue count
+  document.getElementById("issue-count")!.textContent =
+    `${issues.length} issue${issues.length !== 1 ? "s" : ""}`;
+
+  // Severity pills
+  const counts: Record<Severity, number> = {
+    critical: 0,
+    serious: 0,
+    moderate: 0,
+    minor: 0,
+  };
+  for (const i of issues) counts[i.severity]++;
+  const row = document.getElementById("severity-row")!;
+  row.innerHTML = "";
+  for (const sev of [
+    "critical",
+    "serious",
+    "moderate",
+    "minor",
+  ] as Severity[]) {
+    if (counts[sev] === 0) continue;
+    const pill = document.createElement("span");
+    pill.className = "severity-pill";
+    pill.innerHTML = `<span class="severity-dot" style="background:${SEVERITY_COLORS[sev]}"></span>${counts[sev]} ${sev}`;
+    row.appendChild(pill);
+  }
+
+  // URL + time
+  document.getElementById("page-url")!.textContent = url;
+  document.getElementById("page-url")!.title = url;
+  if (timestamp) {
+    document.getElementById("scan-time")!.textContent = new Date(
+      timestamp,
+    ).toLocaleTimeString();
+  }
+}
+
 async function init() {
   // Get the active tab
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) return;
 
-  // Ask background for cached results via a custom message
-  // We send RUN_ACCESSIBILITY_CHECK but really we just want cached data.
-  // Instead, we'll listen for the response from the resultsCache.
-  // Actually, let's query the background directly.
+  const tabId = tab.id;
+
+  // Listen for live scan results while popup is open
+  chrome.runtime.onMessage.addListener(
+    (message: {
+      type: string;
+      payload?: AccessibilityIssue[];
+      url?: string;
+      timestamp?: number;
+    }) => {
+      if (message.type === "ACCESSIBILITY_ISSUES" && message.payload) {
+        renderResults(
+          message.payload,
+          message.url || "",
+          message.timestamp || Date.now(),
+        );
+      }
+    },
+  );
+
+  // Ask background for cached results
   chrome.runtime.sendMessage(
-    { type: "GET_POPUP_DATA", tabId: tab.id },
+    { type: "GET_POPUP_DATA", tabId },
     (
       response:
         | {
@@ -72,68 +150,13 @@ async function init() {
         | undefined,
     ) => {
       if (chrome.runtime.lastError || !response?.payload) {
-        // No data available
         return;
       }
-
-      const issues = response.payload;
-      const url = response.url || "";
-      const timestamp = response.timestamp || 0;
-
-      // Hide no-data, show results
-      document.getElementById("no-data")!.style.display = "none";
-      document.getElementById("results")!.style.display = "block";
-
-      // Score
-      const score = calculateScore(issues);
-      const color = getScoreColor(score);
-      document.getElementById("score-num")!.textContent = String(score);
-      document.getElementById("score-num")!.style.color = color;
-      document.getElementById("score-label")!.textContent =
-        getScoreLabel(score);
-      document.getElementById("score-label")!.style.color = color;
-
-      // Arc: 270 degrees = 131.95 of 175.93 circumference
-      const arcLength = 131.95;
-      const filled = arcLength * (score / 100);
-      const arc = document.getElementById("score-arc")!;
-      arc.style.strokeDasharray = `${filled} 175.93`;
-      arc.style.stroke = color;
-
-      // Issue count
-      document.getElementById("issue-count")!.textContent =
-        `${issues.length} issue${issues.length !== 1 ? "s" : ""}`;
-
-      // Severity pills
-      const counts: Record<Severity, number> = {
-        critical: 0,
-        serious: 0,
-        moderate: 0,
-        minor: 0,
-      };
-      for (const i of issues) counts[i.severity]++;
-      const row = document.getElementById("severity-row")!;
-      for (const sev of [
-        "critical",
-        "serious",
-        "moderate",
-        "minor",
-      ] as Severity[]) {
-        if (counts[sev] === 0) continue;
-        const pill = document.createElement("span");
-        pill.className = "severity-pill";
-        pill.innerHTML = `<span class="severity-dot" style="background:${SEVERITY_COLORS[sev]}"></span>${counts[sev]} ${sev}`;
-        row.appendChild(pill);
-      }
-
-      // URL + time
-      document.getElementById("page-url")!.textContent = url;
-      document.getElementById("page-url")!.title = url;
-      if (timestamp) {
-        document.getElementById("scan-time")!.textContent = new Date(
-          timestamp,
-        ).toLocaleTimeString();
-      }
+      renderResults(
+        response.payload,
+        response.url || "",
+        response.timestamp || 0,
+      );
     },
   );
 }

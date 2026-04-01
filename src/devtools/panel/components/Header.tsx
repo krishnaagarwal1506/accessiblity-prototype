@@ -4,7 +4,7 @@ interface HeaderProps {
   pageUrl: string;
   lastScan: number | null;
   issueCount: number;
-  loading: boolean;
+  isLoading: boolean;
   isEnabled: boolean;
   onToggle: () => void;
   onRefresh: () => void;
@@ -16,7 +16,7 @@ export function Header({
   pageUrl,
   lastScan,
   issueCount,
-  loading,
+  isLoading,
   isEnabled,
   onToggle,
   onRefresh,
@@ -121,9 +121,7 @@ export function Header({
             <span
               className="absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform"
               style={{
-                transform: isEnabled
-                  ? "translateX(14px)"
-                  : "translateX(2px)",
+                transform: isEnabled ? "translateX(14px)" : "translateX(2px)",
               }}
             />
           </span>
@@ -195,12 +193,12 @@ export function Header({
 
         <button
           onClick={onRefresh}
-          disabled={!isEnabled || loading}
+          disabled={!isEnabled || isLoading}
           className="px-3 py-1.5 text-xs font-medium rounded-md text-white transition-colors disabled:opacity-60 flex items-center gap-1.5"
           style={{ background: "var(--accent)" }}
           title="Re-scan page"
         >
-          {loading && (
+          {isLoading && (
             <svg
               className="animate-spin h-3 w-3"
               viewBox="0 0 24 24"

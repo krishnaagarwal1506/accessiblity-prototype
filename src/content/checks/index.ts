@@ -63,7 +63,7 @@ export function runAllChecks(): AccessibilityIssue[] {
 
       // Tag hidden elements
       if (isHidden(el)) {
-        issue.hidden = true;
+        issue.isHidden = true;
         let ancestor: Element | null = el.parentElement;
         while (ancestor && ancestor !== document.documentElement) {
           if (!isHidden(ancestor)) {
