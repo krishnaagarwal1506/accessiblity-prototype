@@ -94,6 +94,7 @@ export function checkSemantics(): AccessibilityIssue[] {
         selector: getSelector(btn),
         wcag: "4.1.2",
         help: "Add text content, aria-label, or aria-labelledby to give this button an accessible name.",
+        fixSnippet: '<button aria-label="Descriptive label">...</button>',
       });
     }
   }
@@ -114,6 +115,88 @@ export function checkSemantics(): AccessibilityIssue[] {
       wcag: "1.3.1",
       help: `Use ${alternative} for semantic emphasis. <${tag}> is purely presentational.`,
     });
+  }
+
+  // WCAG 1.3.1 — <th> without scope in complex tables
+  for (const table of tables) {
+    if (!isVisible(table)) continue;
+    if (
+      table.getAttribute("role") === "presentation" ||
+      table.getAttribute("role") === "none"
+    )
+      continue;
+    const ths = table.querySelectorAll("th");
+    // Only flag scope if there are both row and column headers (complex table)
+    const hasRowHeaders = Array.from(ths).some(
+      (th) => th.closest("tbody, tfoot") !== null,
+    );
+    const hasColHeaders = Array.from(ths).some(
+      (th) => th.closest("thead") !== null,
+    );
+    if (hasRowHeaders && hasColHeaders) {
+      for (const th of ths) {
+        if (!th.getAttribute("scope")) {
+          issues.push({
+            id: uid(),
+            category: "semantics",
+            severity: "moderate",
+            message: "<th> in complex table is missing scope attribute",
+            element: truncateHTML(th.outerHTML),
+            selector: getSelector(th),
+            wcag: "1.3.1",
+            help: 'Add scope="col" or scope="row" to each <th> so assistive technology can associate headers with data cells.',
+          });
+        }
+      }
+    }
+  }
+
+  // WCAG 1.3.1 — List items outside list containers
+  const listItems = document.querySelectorAll("li");
+  for (const li of listItems) {
+    if (!isVisible(li)) continue;
+    const parent = li.parentElement;
+    if (
+      parent &&
+      parent.tagName !== "UL" &&
+      parent.tagName !== "OL" &&
+      parent.tagName !== "MENU" &&
+      parent.getAttribute("role") !== "list"
+    ) {
+      issues.push({
+        id: uid(),
+        category: "semantics",
+        severity: "moderate",
+        message: "<li> is not inside a <ul>, <ol>, or <menu>",
+        element: truncateHTML(li.outerHTML),
+        selector: getSelector(li),
+        wcag: "1.3.1",
+        help: "List items must be contained within a <ul>, <ol>, or <menu> parent for proper semantics.",
+      });
+    }
+  }
+
+  // WCAG 1.3.1 — <dt>/<dd> outside <dl>
+  const dlChildren = document.querySelectorAll("dt, dd");
+  for (const el of dlChildren) {
+    if (!isVisible(el)) continue;
+    const parent = el.parentElement;
+    if (parent && parent.tagName !== "DL" && parent.tagName !== "DIV") {
+      // div is allowed as grouping inside dl
+      const grandparent = parent.parentElement;
+      if (!grandparent || grandparent.tagName !== "DL") {
+        issues.push({
+          id: uid(),
+          category: "semantics",
+          severity: "moderate",
+          message: `<${el.tagName.toLowerCase()}> is not inside a <dl>`,
+          element: truncateHTML(el.outerHTML),
+          selector: getSelector(el),
+          wcag: "1.3.1",
+          help: `<${el.tagName.toLowerCase()}> elements must be contained within a <dl> (definition list).`,
+        });
+      }
+    }
   }
 
   return issues;

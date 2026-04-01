@@ -1,11 +1,14 @@
 import type { Category, Severity } from "@/types";
+import type { WcagLevel } from "../wcag-levels";
 
 interface FilterBarProps {
   categoryFilter: Category | "all";
   severityFilter: Severity | "all";
+  wcagLevel: WcagLevel | "all";
   searchQuery: string;
   onCategoryChange: (v: Category | "all") => void;
   onSeverityChange: (v: Severity | "all") => void;
+  onWcagLevelChange: (v: WcagLevel | "all") => void;
   onSearchChange: (v: string) => void;
 }
 
@@ -20,6 +23,7 @@ const CATEGORIES: { value: Category | "all"; label: string }[] = [
   { value: "links", label: "Links" },
   { value: "document", label: "Document" },
   { value: "semantics", label: "Semantics" },
+  { value: "media", label: "Media" },
 ];
 
 const SEVERITIES: { value: Severity | "all"; label: string }[] = [
@@ -30,12 +34,21 @@ const SEVERITIES: { value: Severity | "all"; label: string }[] = [
   { value: "minor", label: "Minor" },
 ];
 
+const WCAG_LEVELS: { value: WcagLevel | "all"; label: string }[] = [
+  { value: "all", label: "All levels" },
+  { value: "A", label: "Level A" },
+  { value: "AA", label: "Level AA" },
+  { value: "AAA", label: "Level AAA" },
+];
+
 export function FilterBar({
   categoryFilter,
   severityFilter,
+  wcagLevel,
   searchQuery,
   onCategoryChange,
   onSeverityChange,
+  onWcagLevelChange,
   onSearchChange,
 }: FilterBarProps) {
   return (
@@ -102,6 +115,24 @@ export function FilterBar({
         {SEVERITIES.map((s) => (
           <option key={s.value} value={s.value}>
             {s.label}
+          </option>
+        ))}
+      </select>
+
+      {/* WCAG level select */}
+      <select
+        value={wcagLevel}
+        onChange={(e) => onWcagLevelChange(e.target.value as WcagLevel | "all")}
+        className="text-xs px-2.5 py-1.5 rounded-md border focus:outline-none"
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "var(--border)",
+          color: "var(--text-primary)",
+        }}
+      >
+        {WCAG_LEVELS.map((l) => (
+          <option key={l.value} value={l.value}>
+            {l.label}
           </option>
         ))}
       </select>

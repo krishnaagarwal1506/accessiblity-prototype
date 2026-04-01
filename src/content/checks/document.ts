@@ -23,6 +23,7 @@ export function checkDocument(): AccessibilityIssue[] {
       selector: "head",
       wcag: "2.4.2",
       help: "Add a descriptive <title> element inside <head>.",
+      fixSnippet: "<title>Page Title - Site Name</title>",
     });
   }
 
@@ -38,6 +39,7 @@ export function checkDocument(): AccessibilityIssue[] {
       selector: "html",
       wcag: "3.1.1",
       help: 'Add a lang attribute to the <html> element, e.g. <html lang="en">.',
+      fixSnippet: '<html lang="en">',
     });
   }
 
@@ -91,6 +93,27 @@ export function checkDocument(): AccessibilityIssue[] {
       wcag: "1.3.1",
       help: "Wrap navigation links in a <nav> element to help screen reader users find navigation.",
     });
+  }
+
+  // WCAG 3.1.2 Language of Parts — elements with text in a different language
+  // should have a lang attribute
+  const foreignTextElements = document.querySelectorAll("[lang]");
+  for (const el of foreignTextElements) {
+    if (el === document.documentElement) continue; // already checked above
+    const lang = el.getAttribute("lang")!;
+    // Flag empty lang values
+    if (!lang.trim()) {
+      issues.push({
+        id: uid(),
+        category: "document",
+        severity: "moderate",
+        message: "Element has empty lang attribute",
+        element: truncateHTML(el.outerHTML),
+        selector: getSelector(el),
+        wcag: "3.1.2",
+        help: 'The lang attribute must contain a valid language code, e.g. lang="fr" for French.',
+      });
+    }
   }
 
   // Viewport meta should not disable scaling

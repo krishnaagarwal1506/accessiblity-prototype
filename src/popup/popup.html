@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>Accessibility Checker</title>
+</head>
+<body>
+  <div id="root">
+    <div class="header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+        <line x1="9" y1="9" x2="9.01" y2="9"/>
+        <line x1="15" y1="9" x2="15.01" y2="9"/>
+      </svg>
+      <span class="title">Accessibility Checker</span>
+    </div>
+
+    <div id="no-data" class="state">
+      <p class="state-text">No scan data for this tab.</p>
+      <p class="state-hint">Open DevTools and toggle scanning on.</p>
+    </div>
+
+    <div id="results" class="state" style="display:none">
+      <div class="score-row">
+        <div class="score-circle" id="score-circle">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle class="track" cx="32" cy="32" r="28"/>
+            <circle class="fill" id="score-arc" cx="32" cy="32" r="28"/>
+          </svg>
+          <span class="score-num" id="score-num">—</span>
+        </div>
+        <div class="score-meta">
+          <span class="score-label" id="score-label">—</span>
+          <span class="issue-count" id="issue-count">0 issues</span>
+        </div>
+      </div>
+
+      <div class="severity-row" id="severity-row"></div>
+
+      <div class="url-row">
+        <span class="url" id="page-url"></span>
+        <span class="time" id="scan-time"></span>
+      </div>
+    </div>
+  </div>
+  <script src="popup.ts" type="module"></script>
+</body>
+</html>

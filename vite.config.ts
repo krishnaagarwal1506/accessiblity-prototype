@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     webExtension({
-      additionalInputs: ["src/devtools/panel.html"],
+      additionalInputs: ["src/devtools/panel.html", "src/popup/popup.html"],
     }),
   ],
   resolve: {

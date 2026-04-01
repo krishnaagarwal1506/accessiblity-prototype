@@ -9,41 +9,131 @@
   position: relative !important;
 }
 
-/* Severity-based colours */
+/* Severity-based colours — muted, semi-transparent */
 .a11y-checker-highlight-critical {
-  outline: 3px solid #dc2626 !important;
-  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.25) !important;
+  outline: 2px solid rgba(185, 28, 28, 0.55) !important;
+  box-shadow: none !important;
 }
 
 .a11y-checker-highlight-serious {
-  outline: 3px solid #ea580c !important;
-  box-shadow: 0 0 0 1px rgba(234, 88, 12, 0.25) !important;
+  outline: 2px solid rgba(194, 65, 12, 0.5) !important;
+  box-shadow: none !important;
 }
 
 .a11y-checker-highlight-moderate {
-  outline: 2px dashed #ca8a04 !important;
-  box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.2) !important;
+  outline: 1.5px dashed rgba(161, 98, 7, 0.5) !important;
+  box-shadow: none !important;
 }
 
 .a11y-checker-highlight-minor {
-  outline: 2px dashed #2563eb !important;
-  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2) !important;
+  outline: 1.5px dashed rgba(29, 78, 216, 0.45) !important;
+  box-shadow: none !important;
 }
 
 /* Focused / hovered from panel */
 .a11y-checker-focus {
-  outline: 3px solid #7c3aed !important;
+  outline: 2.5px solid rgba(109, 40, 217, 0.7) !important;
   outline-offset: 3px !important;
-  box-shadow: 0 0 12px rgba(124, 58, 237, 0.5) !important;
-  animation: a11y-checker-pulse 1.2s ease-in-out 3;
+  box-shadow: 0 0 8px rgba(109, 40, 217, 0.3) !important;
+  animation: a11y-checker-pulse 1.5s ease-in-out 2;
 }
 
 @keyframes a11y-checker-pulse {
   0%,
   100% {
-    box-shadow: 0 0 12px rgba(124, 58, 237, 0.5) !important;
+    box-shadow: 0 0 8px rgba(109, 40, 217, 0.3) !important;
   }
   50% {
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.8) !important;
+    box-shadow: 0 0 14px rgba(109, 40, 217, 0.5) !important;
   }
+}
+
+/* ---- Tooltip shown on hover over highlighted elements ---- */
+.a11y-checker-tooltip {
+  position: fixed;
+  z-index: 2147483647;
+  max-width: 360px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f1f5f9;
+  font:
+    12px/1.45 -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+.a11y-checker-tooltip.a11y-checker-tooltip--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.a11y-checker-tooltip-severity {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-right: 6px;
+}
+.a11y-checker-tooltip-severity--critical {
+  background: rgba(185, 28, 28, 0.8);
+  color: #fecaca;
+}
+.a11y-checker-tooltip-severity--serious {
+  background: rgba(194, 65, 12, 0.8);
+  color: #fed7aa;
+}
+.a11y-checker-tooltip-severity--moderate {
+  background: rgba(161, 98, 7, 0.7);
+  color: #fef08a;
+}
+.a11y-checker-tooltip-severity--minor {
+  background: rgba(29, 78, 216, 0.7);
+  color: #bfdbfe;
+}
+
+.a11y-checker-tooltip-msg {
+  margin: 4px 0 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.a11y-checker-tooltip-wcag {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+.a11y-checker-tooltip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.a11y-checker-tooltip-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Hidden element parent highlight */
+.a11y-checker-hidden-parent {
+  outline: 2px dashed rgba(109, 40, 217, 0.5) !important;
+  outline-offset: 2px !important;
 }

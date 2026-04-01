@@ -121,5 +121,55 @@ export function checkKeyboardAccessibility(): AccessibilityIssue[] {
     }
   }
 
+  // WCAG 2.5.8 Target Size — interactive elements should be at least 24×24px
+  const MIN_TARGET_SIZE = 24;
+  const interactiveSelectors =
+    'a[href], button, input:not([type="hidden"]), select, textarea, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="tab"], [role="switch"]';
+  const interactives = document.querySelectorAll(interactiveSelectors);
+  for (const el of interactives) {
+    if (isHidden(el)) continue;
+    const rect = el.getBoundingClientRect();
+    // Skip zero-size elements (likely off-screen or inline hidden)
+    if (rect.width === 0 || rect.height === 0) continue;
+    if (rect.width < MIN_TARGET_SIZE && rect.height < MIN_TARGET_SIZE) {
+      issues.push({
+        id: uid(),
+        category: "keyboard",
+        severity: "moderate",
+        message: `Interactive element is too small: ${Math.round(rect.width)}×${Math.round(rect.height)}px (minimum ${MIN_TARGET_SIZE}×${MIN_TARGET_SIZE}px)`,
+        element: truncateHTML(el.outerHTML),
+        selector: getSelector(el),
+        wcag: "2.5.8",
+        help: `Ensure interactive elements have a minimum target size of ${MIN_TARGET_SIZE}×${MIN_TARGET_SIZE}px for touch accessibility.`,
+      });
+    }
+  }
+
+  // WCAG 2.4.7 Focus Visible — check for elements that suppress focus outlines
+  const focusable = document.querySelectorAll(
+    'a[href], button, input, select, textarea, [tabindex="0"]',
+  );
+  for (const el of focusable) {
+    if (isHidden(el)) continue;
+    if (!(el instanceof HTMLElement)) continue;
+    const style = el.style;
+    // Only flag inline styles that explicitly suppress outlines
+    if (
+      (style.outline === "none" || style.outline === "0") &&
+      !style.boxShadow
+    ) {
+      issues.push({
+        id: uid(),
+        category: "keyboard",
+        severity: "serious",
+        message: "Element has inline style suppressing focus outline",
+        element: truncateHTML(el.outerHTML),
+        selector: getSelector(el),
+        wcag: "2.4.7",
+        help: "Do not remove focus outlines with outline:none unless you provide an alternative visible focus indicator (e.g. box-shadow).",
+      });
+    }
+  }
+
   return issues;
 }
