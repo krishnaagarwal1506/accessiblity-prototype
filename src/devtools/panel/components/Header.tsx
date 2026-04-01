@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from "react";
+
 interface HeaderProps {
   pageUrl: string;
   lastScan: number | null;
@@ -6,7 +8,8 @@ interface HeaderProps {
   isEnabled: boolean;
   onToggle: () => void;
   onRefresh: () => void;
-  onExport: () => void;
+  onExportCSV: () => void;
+  onExportHTML: () => void;
 }
 
 export function Header({
@@ -17,9 +20,27 @@ export function Header({
   isEnabled,
   onToggle,
   onRefresh,
-  onExport,
+  onExportCSV,
+  onExportHTML,
 }: HeaderProps) {
   const timeAgo = lastScan ? new Date(lastScan).toLocaleTimeString() : null;
+  const [exportOpen, setExportOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!exportOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setExportOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [exportOpen]);
 
   return (
     <header
@@ -77,23 +98,33 @@ export function Header({
               : "var(--bg-secondary)",
             border: `1px solid ${isEnabled ? "var(--accent)" : "var(--border)"}`,
           }}
-          title={isEnabled ? "Scanning enabled — click to disable" : "Scanning disabled — click to enable"}
+          title={
+            isEnabled
+              ? "Scanning enabled — click to disable"
+              : "Scanning disabled — click to enable"
+          }
         >
           <span
             className="text-xs font-medium"
-            style={{ color: isEnabled ? "var(--accent)" : "var(--text-secondary)" }}
+            style={{
+              color: isEnabled ? "var(--accent)" : "var(--text-secondary)",
+            }}
           >
             {isEnabled ? "On" : "Off"}
           </span>
-          {/* Track */}
           <span
             className="relative inline-flex h-4 w-7 rounded-full transition-colors"
-            style={{ background: isEnabled ? "var(--accent)" : "var(--border)" }}
+            style={{
+              background: isEnabled ? "var(--accent)" : "var(--border)",
+            }}
           >
-            {/* Thumb */}
             <span
               className="absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform"
-              style={{ transform: isEnabled ? "translateX(14px)" : "translateX(2px)" }}
+              style={{
+                transform: isEnabled
+                  ? "translateX(14px)"
+                  : "translateX(2px)",
+              }}
             />
           </span>
         </button>
@@ -104,19 +135,63 @@ export function Header({
           </span>
         )}
 
-        <button
-          onClick={onExport}
-          disabled={!isEnabled || issueCount === 0}
-          className="px-3 py-1.5 text-xs font-medium rounded-md border transition-colors disabled:opacity-40"
-          style={{
-            background: "var(--bg-secondary)",
-            borderColor: "var(--border)",
-            color: "var(--text-primary)",
-          }}
-          title="Export as CSV"
-        >
-          Export
-        </button>
+        {/* Export dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setExportOpen(!exportOpen)}
+            disabled={!isEnabled || issueCount === 0}
+            className="px-3 py-1.5 text-xs font-medium rounded-md border transition-colors disabled:opacity-40 flex items-center gap-1"
+            style={{
+              background: "var(--bg-secondary)",
+              borderColor: "var(--border)",
+              color: "var(--text-primary)",
+            }}
+            title="Export report"
+          >
+            Export
+            <svg
+              className="w-3 h-3"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {exportOpen && (
+            <div
+              className="absolute right-0 top-full mt-1 py-1 rounded-md border shadow-lg z-20"
+              style={{
+                background: "var(--bg-card)",
+                borderColor: "var(--border)",
+                minWidth: 140,
+              }}
+            >
+              <button
+                onClick={() => {
+                  onExportCSV();
+                  setExportOpen(false);
+                }}
+                className="w-full text-left px-3 py-1.5 text-xs transition-colors hover:opacity-80"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Export as CSV
+              </button>
+              <button
+                onClick={() => {
+                  onExportHTML();
+                  setExportOpen(false);
+                }}
+                className="w-full text-left px-3 py-1.5 text-xs transition-colors hover:opacity-80"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Export as HTML
+              </button>
+            </div>
+          )}
+        </div>
 
         <button
           onClick={onRefresh}

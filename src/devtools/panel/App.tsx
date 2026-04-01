@@ -14,6 +14,7 @@ import {
   getFingerprint,
   type SuppressedIssue,
 } from "./suppress";
+import { exportHtmlReport } from "./export-html";
 
 export default function App() {
   const [issues, setIssues] = useState<AccessibilityIssue[]>([]);
@@ -179,6 +180,11 @@ export default function App() {
     URL.revokeObjectURL(url);
   }, [activeIssues]);
 
+  const exportHTML = useCallback(() => {
+    if (activeIssues.length === 0) return;
+    exportHtmlReport(activeIssues, pageUrl, lastScan);
+  }, [activeIssues, pageUrl, lastScan]);
+
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
       <Header
@@ -189,7 +195,8 @@ export default function App() {
         isEnabled={isEnabled}
         onToggle={toggleScanning}
         onRefresh={refresh}
-        onExport={exportCSV}
+        onExportCSV={exportCSV}
+        onExportHTML={exportHTML}
       />
 
       {!isEnabled ? (
