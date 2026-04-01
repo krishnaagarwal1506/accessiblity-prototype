@@ -2,7 +2,7 @@ import type { AccessibilityIssue, Severity, HighlightResult } from "@/types";
 
 interface IssueCardProps {
   issue: AccessibilityIssue;
-  expanded: boolean;
+  isExpanded: boolean;
   onToggle: () => void;
   onHighlight: () => void;
   onClearHighlight: () => void;
@@ -41,7 +41,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export function IssueCard({
   issue,
-  expanded,
+  isExpanded,
   onToggle,
   onHighlight,
   onClearHighlight,
@@ -54,7 +54,7 @@ export function IssueCard({
     <div
       className="rounded-lg border transition-all"
       style={{
-        borderColor: expanded
+        borderColor: isExpanded
           ? SEVERITY_COLORS[issue.severity]
           : "var(--border)",
         background: "var(--bg-card)",
@@ -116,7 +116,7 @@ export function IssueCard({
             >
               {issue.category}
             </span>
-            {issue.hidden && (
+            {issue.isHidden && (
               <span
                 className="text-[10px] px-1.5 py-0.5 rounded flex items-center gap-0.5"
                 style={{
@@ -147,7 +147,7 @@ export function IssueCard({
           className="w-4 h-4 mt-1 shrink-0 transition-transform"
           style={{
             color: "var(--text-secondary)",
-            transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+            transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
           }}
           fill="none"
           viewBox="0 0 24 24"
@@ -159,7 +159,7 @@ export function IssueCard({
       </button>
 
       {/* Expanded details */}
-      {expanded && (
+      {isExpanded && (
         <div
           className="px-3 pb-3 pt-0 border-t mx-3 mb-1"
           style={{ borderColor: "var(--border)" }}
@@ -230,9 +230,11 @@ export function IssueCard({
               <code
                 className="block text-xs p-2 rounded overflow-x-auto whitespace-pre-wrap break-all"
                 style={{
-                  background: "color-mix(in srgb, var(--success) 8%, var(--bg-secondary))",
+                  background:
+                    "color-mix(in srgb, var(--success) 8%, var(--bg-secondary))",
                   color: "var(--success)",
-                  border: "1px solid color-mix(in srgb, var(--success) 20%, transparent)",
+                  border:
+                    "1px solid color-mix(in srgb, var(--success) 20%, transparent)",
                 }}
               >
                 {issue.fixSnippet}
@@ -241,7 +243,7 @@ export function IssueCard({
           )}
 
           {/* Hidden element explanation */}
-          {issue.hidden && (
+          {issue.isHidden && (
             <div
               className="mt-2 p-2 rounded text-xs leading-relaxed"
               style={{

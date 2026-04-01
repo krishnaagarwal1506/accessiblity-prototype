@@ -7,7 +7,7 @@ interface IssueListProps {
   issues: AccessibilityIssue[];
   focusIssueId?: string | null;
   onFocusHandled?: () => void;
-  showSuppressed?: boolean;
+  isShowSuppressed?: boolean;
   suppressedMap?: Record<string, SuppressedIssue>;
   onSuppress?: (issue: AccessibilityIssue) => void;
   onUnsuppress?: (fingerprint: string) => void;
@@ -140,7 +140,7 @@ export function IssueList({
             >
               <IssueCard
                 issue={issue}
-                expanded={expandedId === issue.id}
+                isExpanded={expandedId === issue.id}
                 onToggle={() => toggleExpand(issue.id)}
                 onHighlight={() => highlightElement(issue)}
                 onClearHighlight={clearHighlight}

@@ -87,7 +87,7 @@ export function checkColorContrast(): AccessibilityIssue[] {
     const fgParsed = parseColor(style.color);
     if (!fgParsed) continue;
 
-    let bgColor = getEffectiveBackground(el);
+    const bgColor = getEffectiveBackground(el);
     if (!bgColor) continue;
 
     const [fr, fg, fb, fa] = fgParsed;

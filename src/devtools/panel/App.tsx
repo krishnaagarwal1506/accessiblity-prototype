@@ -39,6 +39,25 @@ export default function App() {
     getSuppressedIssues().then(setSuppressedMap);
   }, []);
 
+  // On mount, query the background for the current scan state (handles panel
+  // being closed and reopened while scanning was already active)
+  useEffect(() => {
+    chrome.runtime.sendMessage(
+      { type: "GET_SCAN_STATE", tabId },
+      (response) => {
+        if (chrome.runtime.lastError) return;
+        if (response?.enabled) {
+          setIsEnabled(true);
+          setLoading(true);
+          chrome.runtime.sendMessage({
+            type: "RUN_ACCESSIBILITY_CHECK",
+            tabId,
+          });
+        }
+      },
+    );
+  }, [tabId]);
+
   // Single listener handles both scan results and "show in panel" from tooltip
   useEffect(() => {
     const listener = (message: {
@@ -61,22 +80,6 @@ export default function App() {
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, []);
 
-  // On mount, query the background for the current scan state (handles panel
-  // being closed and reopened while scanning was already active)
-  useEffect(() => {
-    chrome.runtime.sendMessage(
-      { type: "GET_SCAN_STATE", tabId },
-      (response) => {
-        if (chrome.runtime.lastError) return;
-        if (response?.enabled) {
-          setIsEnabled(true);
-          setLoading(true);
-          chrome.runtime.sendMessage({ type: "RUN_ACCESSIBILITY_CHECK", tabId });
-        }
-      },
-    );
-  }, [tabId]);
-
   const toggleScanning = useCallback(() => {
     if (isEnabled) {
       setIsEnabled(false);
@@ -97,14 +100,11 @@ export default function App() {
     chrome.runtime.sendMessage({ type: "RUN_ACCESSIBILITY_CHECK", tabId });
   }, [isEnabled, tabId]);
 
-  const handleSuppress = useCallback(
-    async (issue: AccessibilityIssue) => {
-      await suppressIssue(issue.selector, issue.message, "Manually dismissed");
-      const updated = await getSuppressedIssues();
-      setSuppressedMap(updated);
-    },
-    [],
-  );
+  const handleSuppress = useCallback(async (issue: AccessibilityIssue) => {
+    await suppressIssue(issue.selector, issue.message, "Manually dismissed");
+    const updated = await getSuppressedIssues();
+    setSuppressedMap(updated);
+  }, []);
 
   const handleUnsuppress = useCallback(async (fingerprint: string) => {
     await unsuppressIssue(fingerprint);
@@ -191,7 +191,7 @@ export default function App() {
         pageUrl={pageUrl}
         lastScan={lastScan}
         issueCount={activeIssues.length}
-        loading={loading}
+        isLoading={loading}
         isEnabled={isEnabled}
         onToggle={toggleScanning}
         onRefresh={refresh}
