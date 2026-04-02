@@ -26,7 +26,7 @@ export function IssueList({
   issues,
   focusIssueId,
   onFocusHandled,
-  showSuppressed,
+  isShowSuppressed,
   suppressedMap,
   onSuppress,
   onUnsuppress,
@@ -147,12 +147,12 @@ export function IssueList({
                 highlightStatus={highlightStatuses[issue.id] ?? null}
                 isSuppressed={isSuppressed}
                 onSuppress={
-                  !showSuppressed && onSuppress
+                  !isShowSuppressed && onSuppress
                     ? () => onSuppress(issue)
                     : undefined
                 }
                 onUnsuppress={
-                  showSuppressed && onUnsuppress
+                  isShowSuppressed && onUnsuppress
                     ? () => onUnsuppress(fp)
                     : undefined
                 }

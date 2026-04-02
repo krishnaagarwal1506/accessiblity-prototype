@@ -210,6 +210,7 @@ function isOwnNode(node: Node): boolean {
   const el = node instanceof Element ? node : node.parentElement;
   if (!el) return false;
   if (el.closest(".a11y-checker-tooltip")) return true;
+  if (el.closest(".a11y-checker-spotlight")) return true;
   if (
     typeof (el as HTMLElement).className === "string" &&
     (el as HTMLElement).className.includes("a11y-checker")
@@ -292,6 +293,7 @@ function stopScanning() {
     el.removeEventListener("mouseleave", handleTooltipLeave);
   }
   elementIssueMap.clear();
+  removeSpotlight();
   hideTooltip(true);
 
   // Notify panel that issues are cleared
@@ -303,15 +305,50 @@ function stopScanning() {
   } satisfies Message);
 }
 
+/* ---- Spotlight overlay ---- */
+let spotlightEl: HTMLDivElement | null = null;
+let spotlightTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Injects a fixed-position overlay above `target` and plays the
+ * `a11y-spotlight-in` CSS animation to draw the user's eye.
+ * position:fixed + pointer-events:none means it never affects layout.
+ */
+function showSpotlight(target: Element) {
+  removeSpotlight();
+  const rect = target.getBoundingClientRect();
+  const div = document.createElement("div");
+  div.className = "a11y-checker-spotlight";
+  // 4 px padding so the glow ring clears the element's own content
+  div.style.top = `${rect.top - 4}px`;
+  div.style.left = `${rect.left - 4}px`;
+  div.style.width = `${rect.width + 8}px`;
+  div.style.height = `${rect.height + 8}px`;
+  document.body.appendChild(div);
+  spotlightEl = div;
+  // Remove after animation (2 s) + small buffer
+  spotlightTimer = setTimeout(() => removeSpotlight(), 2200);
+}
+
+function removeSpotlight() {
+  if (spotlightTimer) {
+    clearTimeout(spotlightTimer);
+    spotlightTimer = null;
+  }
+  spotlightEl?.remove();
+  spotlightEl = null;
+}
+
 /* ---- Highlight with hidden-element detection ---- */
 function highlightElement(selector: string): HighlightResult {
-  // Clear previous focus highlights
+  // Clear previous focus highlights and any existing spotlight
   document
     .querySelectorAll(".a11y-checker-focus, .a11y-checker-hidden-parent")
     .forEach((el) => {
       el.classList.remove("a11y-checker-focus");
       el.classList.remove("a11y-checker-hidden-parent");
     });
+  removeSpotlight();
 
   try {
     const el = document.querySelector(selector);
@@ -324,6 +361,9 @@ function highlightElement(selector: string): HighlightResult {
         if (!isHidden(ancestor)) {
           ancestor.classList.add("a11y-checker-hidden-parent");
           ancestor.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Wait for smooth scroll to settle before placing the spotlight
+          const captured = ancestor;
+          setTimeout(() => showSpotlight(captured), 400);
           return { status: "hidden", parentSelector: getSelector(ancestor) };
         }
         ancestor = ancestor.parentElement;
@@ -333,6 +373,8 @@ function highlightElement(selector: string): HighlightResult {
 
     el.classList.add("a11y-checker-focus");
     el.scrollIntoView({ behavior: "smooth", block: "center" });
+    // 400 ms covers most smooth-scroll durations across browsers
+    setTimeout(() => showSpotlight(el), 400);
     return { status: "found" };
   } catch {
     return { status: "not-found" };
@@ -346,6 +388,7 @@ function clearHighlight() {
       el.classList.remove("a11y-checker-focus");
       el.classList.remove("a11y-checker-hidden-parent");
     });
+  removeSpotlight();
   hideTooltip();
 }
 

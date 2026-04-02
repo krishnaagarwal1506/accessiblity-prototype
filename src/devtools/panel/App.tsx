@@ -328,7 +328,7 @@ export default function App() {
                 issues={filteredIssues}
                 focusIssueId={focusIssueId}
                 onFocusHandled={() => setFocusIssueId(null)}
-                showSuppressed={showSuppressed}
+                isShowSuppressed={showSuppressed}
                 suppressedMap={suppressedMap}
                 onSuppress={handleSuppress}
                 onUnsuppress={handleUnsuppress}

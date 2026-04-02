@@ -3,49 +3,94 @@
    Injected into inspected pages
    ======================================== */
 
-/* Base highlight — subtle outline */
-.a11y-checker-highlight {
-  outline-offset: 2px !important;
-  position: relative !important;
-}
+/*
+  All highlights use box-shadow (0 blur, spread-only) instead of outline.
+  Outline with outline-offset can cause layout shifts in certain stacking
+  contexts (e.g. when position:relative is added), breaking the page UI.
+  box-shadow never affects layout and looks identical to the user.
+*/
 
-/* Severity-based colours — muted, semi-transparent */
+/* Severity-based colour rings */
 .a11y-checker-highlight-critical {
-  outline: 2px solid rgba(185, 28, 28, 0.55) !important;
-  box-shadow: none !important;
+  box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.65) !important;
 }
 
 .a11y-checker-highlight-serious {
-  outline: 2px solid rgba(194, 65, 12, 0.5) !important;
-  box-shadow: none !important;
+  box-shadow: 0 0 0 2px rgba(194, 65, 12, 0.6) !important;
 }
 
 .a11y-checker-highlight-moderate {
-  outline: 1.5px dashed rgba(161, 98, 7, 0.5) !important;
-  box-shadow: none !important;
+  box-shadow: 0 0 0 2px rgba(161, 98, 7, 0.55) !important;
 }
 
 .a11y-checker-highlight-minor {
-  outline: 1.5px dashed rgba(29, 78, 216, 0.45) !important;
-  box-shadow: none !important;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.5) !important;
 }
 
-/* Focused / hovered from panel */
+/* Focused / located from panel — persistent ring + 3-cycle pulse */
 .a11y-checker-focus {
-  outline: 2.5px solid rgba(109, 40, 217, 0.7) !important;
-  outline-offset: 3px !important;
-  box-shadow: 0 0 8px rgba(109, 40, 217, 0.3) !important;
-  animation: a11y-checker-pulse 1.5s ease-in-out 2;
+  box-shadow:
+    0 0 0 3px rgba(109, 40, 217, 0.8),
+    0 0 16px rgba(109, 40, 217, 0.35) !important;
+  animation: a11y-checker-focus-pulse 1.5s ease-in-out 3;
 }
 
-@keyframes a11y-checker-pulse {
+@keyframes a11y-checker-focus-pulse {
   0%,
   100% {
-    box-shadow: 0 0 8px rgba(109, 40, 217, 0.3) !important;
+    box-shadow:
+      0 0 0 3px rgba(109, 40, 217, 0.8),
+      0 0 16px rgba(109, 40, 217, 0.35) !important;
   }
   50% {
-    box-shadow: 0 0 14px rgba(109, 40, 217, 0.5) !important;
+    box-shadow:
+      0 0 0 3px rgba(109, 40, 217, 1),
+      0 0 28px rgba(109, 40, 217, 0.6) !important;
   }
+}
+
+/*
+  Spotlight overlay — a fixed-position <div> injected above the located element.
+  It lives entirely outside the page flow (position:fixed, pointer-events:none)
+  so it cannot break layout.  The animation bursts bright, expands the glow ring
+  outward, then fades to opacity 0.  The JS removes it at ~2.2 s.
+*/
+.a11y-checker-spotlight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2147483646;
+  border-radius: 4px;
+  box-sizing: border-box;
+  animation: a11y-spotlight-in 2s ease-out forwards;
+}
+
+@keyframes a11y-spotlight-in {
+  0% {
+    box-shadow:
+      0 0 0 4px rgba(109, 40, 217, 0.95),
+      0 0 0 8px rgba(109, 40, 217, 0.55),
+      0 0 32px rgba(109, 40, 217, 0.45);
+    opacity: 1;
+  }
+  35% {
+    box-shadow:
+      0 0 0 4px rgba(109, 40, 217, 0.9),
+      0 0 0 18px rgba(109, 40, 217, 0.28),
+      0 0 52px rgba(109, 40, 217, 0.35);
+    opacity: 1;
+  }
+  100% {
+    box-shadow:
+      0 0 0 3px rgba(109, 40, 217, 0),
+      0 0 0 6px rgba(109, 40, 217, 0),
+      0 0 0 rgba(109, 40, 217, 0);
+    opacity: 0;
+  }
+}
+
+/* Hidden element parent highlight */
+.a11y-checker-hidden-parent {
+  box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.55) !important;
 }
 
 /* ---- Tooltip shown on hover over highlighted elements ---- */
@@ -130,10 +175,4 @@
 }
 .a11y-checker-tooltip-btn:hover {
   background: rgba(255, 255, 255, 0.2);
-}
-
-/* Hidden element parent highlight */
-.a11y-checker-hidden-parent {
-  outline: 2px dashed rgba(109, 40, 217, 0.5) !important;
-  outline-offset: 2px !important;
 }
